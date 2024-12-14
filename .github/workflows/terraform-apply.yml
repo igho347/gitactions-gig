@@ -1,0 +1,10 @@
+name: GitHub Actions Demo
+on: [workflow_dispatch] 
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Python script
+        run: python3 main.py
