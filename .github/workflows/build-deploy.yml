@@ -1,0 +1,64 @@
+name: "build-deploy"
+ 
+on:
+ pull_request:
+   branches:
+   - main
+ workflow_dispatch: 
+   
+ 
+env:
+ # verbosity setting for Terraform logs
+ TF_LOG: INFO
+ # Credentials for deployment to AWS
+ AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+ AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+ build:
+   name: build docker image
+   runs-on: ubuntu-latest
+   defaults:
+     run:
+       shell: bash
+       # We keep Terraform files in the terraform directory.
+       
+ 
+   steps:
+     - name: Checkout the repository to the runner
+       uses: actions/checkout@v4
+
+     - uses: aws-actions/configure-aws-credentials@v2
+       with: 
+        aws-region: us-east-1
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+
+     - name: Login to Amazon ECR
+       id: login-ecr
+       uses: aws-actions/amazon-ecr-login@v2
+
+     - name: Build, tag, and push docker image for frontend to Amazon ECR
+       env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REPOSITORY: dopso2-fe
+        IMAGE_TAG: ${{ github.sha }}
+       run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+       working-directory: ./frontend
+
+     - name: Build, tag, and push docker image for backend to Amazon ECR
+       env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REPOSITORY: dopso2-be
+        IMAGE_TAG: ${{ github.sha }}
+       run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+       working-directory: ./backend
+
+      
+        
