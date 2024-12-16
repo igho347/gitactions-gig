@@ -3,7 +3,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Define variables for the vpc
+# Define variables for the vpc 
 variable "vpc_id" {
   default = "vpc-08fcbd2bedfbbddaa" 
   }
@@ -57,7 +57,7 @@ resource "aws_ecr_repository" "ecr" {
   }
 }
 
-resource "aws_ecr_repository" "ecr" {
+resource "aws_ecr_repository" "ecr01" {
   name                 = "dopso2-be"
   image_tag_mutability = "MUTABLE"
 
@@ -79,7 +79,7 @@ terraform {
 
     key    = "state-file-folder"
 
-    region = "us-east-1"
+    region = "us-east-2"
 
   }
 
